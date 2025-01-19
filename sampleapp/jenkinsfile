@@ -1,0 +1,74 @@
+pipeline {
+    agent any
+    tools {
+        maven 'maven'
+    }
+    stages {
+        stage('checkout') {
+            steps {
+                echo 'Cloning GIT HUB Repo '
+                git branch: 'main', url: 'https://github.com/Deepth1-253/cicd-pipeline.git'
+            }
+        }
+
+        stage('sonar') {
+            steps {
+                echo 'Code Scanning'
+                sh 'ls -ltr'
+                sh ''' mvn sonar:sonar \\
+                       -Dsonar.host.url=http://54.210.184.84:9000 \\
+                       -Dsonar.login=squ_3a1895eec54f3510b0909721337a185e90dbd43f'''
+            }
+        }
+
+        stage('Build Artifact') {
+            steps {
+                echo 'Building Artifact'
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Docker Image') {
+            steps {
+                echo 'Docker Image building'
+                // The following command builds a Docker image and tags it with the current build number
+                sh "docker build -t deepb023/batch13:${BUILD_NUMBER} ."
+            }
+        }
+
+        stage('Push to Dockerhub') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')])
+                    {
+                        sh "docker login -u deepb023 -p ${dockerhub}"
+                    }
+                    sh "docker push deepb023/batch13:${BUILD_NUMBER}"
+                }
+            }
+        }
+
+            stage('Update Deployment File') {
+                environment {
+                    GIT_REPO_NAME = 'cicd-pipeline'
+                    GIT_USER_NAME = 'Deepth1-253'
+                }
+                steps {
+                    echo 'Update Deployment File'
+				    withCredentials([string(credentialsId: 'githubtoken', variable: 'githubtoken')])
+                    {
+                        sh """
+                     git config user.email "deepthibondalapati253@gmail.com"
+                     git config user.name "Deepth1-253"
+                     Build_Number=${BUILD_NUMBER}
+                     sed -i "s/batch13:.*/batch13:${BUILD_NUMBER}/g" sampleapp/deploymentfiles/deployment.yml
+                     git add .
+                     git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+
+                        git push https://${githubtoken}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                    """
+                    }
+                }
+            }
+    }
+}

@@ -1,0 +1,54 @@
+CI-CD on Jenkins from scratch
+CI
+1. Create ec2 instance (t2.large/medium)
+2. Install jenkins
+    dependency- java
+3. Install docker
+    sudo yum install docker -y
+    sudo systemctl start docker
+    sudo usermod -aG docker jenkins
+    sudo usermod -aG docker ec2-user
+    sudo systemctl restart docker
+    sudo chmod 666 /var/run/docker.sock
+4. configure aws cli , aws configure
+5. aws sts get-caller-identity
+    checks for the aws permission for this server
+6. Install eksctl and kubectl
+7. create EKS Cluster using eksctl
+   eksctl create cluster --name appcluster --nodegroup-name appng --node-type t3.micro --nodes 8 --managed
+8. Install pluings in jenkins
+   docker
+9. create secreat password manager for dockerhub password and github token
+10. Install sonarqube on ec2 using docker image for code scanning purpose
+    docker run -itd --name sonar -p 9000:9000 sonarqube
+    check the container status (docker ps)
+    check the sonarqube url - http://ip:9000
+    login to sonarqube 
+    user name - admin
+    pwd - admin
+    change the default password
+11. Create sonarqube token for jenkins
+    sonar dashboard -- Administration -- Myaccount -- Security -- create token
+12. Create jenkinsfile
+13. Build pipeline in jenkins
+    stages- checkout,scan,build,docker build,docker push,update deployment file
+CD
+1. Install argocd
+    kubectl create namespace argocd
+    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    kubectl get all -n argocd
+    # convert the service type to loadbalancer to access publicly
+    kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+    # check the service status
+    kubectl get svc -n argocd
+    kubectl get all -n argocd
+2. # login to argocd
+    url = loadbalancer url
+    # get the password
+    kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d;echo
+    argocd login <server> --username admin --password <password>
+3. Create application in argocd
+    # create application using UI
+4. Destroy the eks cluster
+    eksctl delete cluster --name appcluster --region us-east-1
+      
