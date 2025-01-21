@@ -9,8 +9,7 @@ pipeline {
         stage('Code Checkout') {
             steps {
                 echo 'Code checkout'
-                git branch: 'main', url: 'https://github.com/Deepth1-253/cicd-pipeline.git',
-                credentialsId: '79982f29-d5d7-4bdf-a450-caafdbfa7ae7'
+                git branch: 'main', url: 'https://github.com/Deepth1-253/cicd-pipeline.git'
             }
         }
 
