@@ -1,0 +1,23 @@
+//  define helloWorld method in var/helloWorld.groovy
+def call() {
+    sh 'echo Hi From DevOps Team'
+}
+
+//  pipeline example using shared library
+
+@Library ('my-sharedlibrary') _
+pipeline {
+    agent any
+        Stages {
+            stage('greeting') {
+                steps {
+                    helloWorld()
+                }
+            }
+        }
+}
+
+// configure shared library in jenkins
+// Manage Jenkins -> Configure System -> Global Pipeline Libraries -> Add Library
+// Name: my-sharedlibrary
+// Default version: main

@@ -16,7 +16,7 @@ pipeline {
                 echo 'Code Scanning'
                 sh 'ls -ltr'
                 sh ''' mvn sonar:sonar \\
-                       -Dsonar.host.url=http://54.210.184.84:9000 \\
+                       -Dsonar.host.url=http://54.91.110.22:9000 \\
                        -Dsonar.login=squ_3a1895eec54f3510b0909721337a185e90dbd43f'''
             }
         }
